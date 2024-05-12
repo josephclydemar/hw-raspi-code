@@ -1,4 +1,4 @@
-# Home Warden - Raspberry Pi
+# Home Warden [Raspberry Pi]
 This repo contains all the hardware code for `Home Warden`
 
 <br>
@@ -16,7 +16,6 @@ python -m venv --system-site-packages hw-raspi-code-venv
 ```
 source ./hw-raspi-code-venv/bin/activate
 ```
-
 
 **Step 3:**
 ```
