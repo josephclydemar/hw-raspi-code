@@ -1,11 +1,22 @@
 import os
-import socketio # type: ignore
-import cv2 as cv # type: ignore
-from picamera2 import Picamera2 # type: ignore
 
-# Set pins for trigger and echo
+# Set pins for ultrasonic sensor
 TRIG_PIN = 23
 ECHO_PIN = 24
+
+# Set pins for buzzer, button, and led
+LED_PIN = 20
+BUTTON_PIN = 12
+BUZZER_PIN = 19
+
+
+SERVO_PIN = 13
+PWM_FREQ = 50 # (Hz)
+
+# Set PWM duty cycle range
+# PWM_duty_min = 2.5
+# PWM_duty_max = 12.5
+
 
 TRAINING_DIR = os.path.join('captured_faces', 'train')
 VALIDATION_DIR = os.path.join('captured_faces', 'val')
@@ -19,11 +30,3 @@ HTTP_REST_ENDPOINTS = {
     'day_records_v2': f'{REMOTE_SERVER_HOST}/api/v2/day_records',
     'detections_v2': f'{REMOTE_SERVER_HOST}/api/v2/detections',
 }
-
-SIO = socketio.Client()
-
-HAAR_CASCADE = cv.CascadeClassifier('./haarcascades/haarcascade_frontalface_default.xml')
-
-VIDEO_WRITER = None
-
-PICAM2 = Picamera2()
