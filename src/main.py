@@ -70,7 +70,7 @@ def open_door():
     time.sleep(2)
     pwm.stop()
 
-def trottle_buzzer(pin):
+def sound_buzzer(pin):
     for _ in range(10):
         GPIO.output(pin, GPIO.HIGH)
         time.sleep(0.05)
@@ -115,7 +115,7 @@ while not is_socket_connected:
         def from_server_open_door(data):
             global PWM, BUZZER_PIN
             print('Open Door', data)
-            # trottle_buzzer(BUZZER_PIN)
+            # sound_buzzer(BUZZER_PIN)
             open_door(PWM)
     except Exception as e:
         print(e)
@@ -144,7 +144,7 @@ def generate():
     while True:
         if GPIO.input(BUTTON_PIN) == GPIO.LOW:
             sio.emit('from_raspi_doorbell_press', 'The Doorbell has been pressed. Please check your camera.')
-            trottle_buzzer(BUZZER_PIN)
+            sound_buzzer(BUZZER_PIN)
         frame = picam.capture_array()
 
         distance = get_distance(TRIG_PIN, ECHO_PIN)
