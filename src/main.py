@@ -112,11 +112,11 @@ while not is_socket_connected:
         is_socket_connected = True
 
         @sio.event
-        def from_server_open_door(data):
+        def from_server_control_door(data):
             global PWM, BUZZER_PIN
             print('Open Door', data)
-            # sound_buzzer(BUZZER_PIN)
-            open_door(PWM)
+            sound_buzzer(BUZZER_PIN)
+            # open_door(PWM)
     except Exception as e:
         print(e)
         continue
@@ -142,9 +142,6 @@ def generate():
         initialize_picamera()
     
     while True:
-        if GPIO.input(BUTTON_PIN) == GPIO.LOW:
-            sio.emit('from_raspi_doorbell_press', 'The Doorbell has been pressed. Please check your camera.')
-            sound_buzzer(BUZZER_PIN)
         frame = picam.capture_array()
 
         distance = get_distance(TRIG_PIN, ECHO_PIN)
@@ -192,7 +189,7 @@ def generate():
 
 
 
-def video_sender():
+def send_recorded_videos():
     with requests.Session() as session:
         while True:
             if len(os.listdir(os.path.join('videos', 'ready'))) > 0:
@@ -212,6 +209,12 @@ def video_sender():
 
 
 
+def listen_for_gpio():
+    while True:
+        if GPIO.input(BUTTON_PIN) == GPIO.LOW:
+            sio.emit('from_raspi_doorbell_press', 'The Doorbell has been pressed. Please check your camera.')
+            sound_buzzer(BUZZER_PIN)
+
 
 
 
@@ -224,7 +227,7 @@ def video_sender():
 
 
 # if __name__ == '__main__':
-#     threads = (threading.Thread(target=main), threading.Thread(target=video_sender))
+#     threads = (threading.Thread(target=main), threading.Thread(target=send_recorded_videos))
 #     for t in threads:
 #         t.start()
 
@@ -233,7 +236,10 @@ def video_sender():
 
 try:
     if __name__ == '__main__':
-        threads = (threading.Thread(target=video_sender),)
+        threads = (
+                threading.Thread(target=send_recorded_videos),
+                threading.Thread(target=listen_for_gpio),
+            )
         for t in threads:
             t.start()
 
