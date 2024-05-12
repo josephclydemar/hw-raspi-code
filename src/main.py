@@ -23,7 +23,7 @@ import pickle
 
 
 
-from constant_variables import REMOTE_SERVER_HOST, TRIG_PIN, ECHO_PIN, LED_PIN, BUTTON_PIN, BUZZER_PIN, SERVO_PIN, PWM_FREQ
+from constant_variables import REMOTE_SERVER_HOST, HTTP_REST_ENDPOINTS, TRIG_PIN, ECHO_PIN, LED_PIN, BUTTON_PIN, BUZZER_PIN, SERVO_PIN, PWM_FREQ
 
 sio = socketio.Client()
 is_socket_connected = False
@@ -193,19 +193,22 @@ def generate():
 
 
 def video_sender():
-    while True:
-        if len(os.listdir(os.path.join('videos', 'ready'))) > 0:
-            for filename in os.listdir(os.path.join('videos', 'ready')):
-                file = open(os.path.join('videos', 'ready', filename), 'rb')
-                payload = MultipartEncoder(fields={
-                    'recorded_video': (filename, file, 'video/mp4'),
-                    'day_record_id': '663f41284da5229f2529390a'
-                })
-                response = requests.post('http://192.168.1.2:8500/api/v1/detections', data=payload, headers={'Content-Type': payload.content_type})
-                file.close()
-                print(response.json())
-                os.remove(os.path.join('videos', 'ready', filename))
-                time.sleep(0.1)
+    with requests.Session() as session:
+        while True:
+            if len(os.listdir(os.path.join('videos', 'ready'))) > 0:
+                current_day_response = session.get(HTTP_REST_ENDPOINTS['day_records_v2'])
+                current_day_json = current_day_response.json()
+                for filename in os.listdir(os.path.join('videos', 'ready')):
+                    file = open(os.path.join('videos', 'ready', filename), 'rb')
+                    payload = MultipartEncoder(fields={
+                        'recorded_video': (filename, file, 'video/mp4'),
+                        'day_record_id': current_day_json['_id']
+                    })
+                    response = session.post(HTTP_REST_ENDPOINTS['detections_v1'], data=payload, headers={'Content-Type': payload.content_type})
+                    file.close()
+                    print(response.json())
+                    os.remove(os.path.join('videos', 'ready', filename))
+                    # time.sleep(0.1)
 
 
 
@@ -230,6 +233,11 @@ def video_sender():
 
 try:
     if __name__ == '__main__':
+        threads = (threading.Thread(target=video_sender),)
+        for t in threads:
+            t.start()
+
+        
         @app.route('/')
         def index():
             return render_template('index.html')
@@ -238,12 +246,7 @@ try:
         def video_feed():
             return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-        if __name__ == '__main__':
-            app.run(host='0.0.0.0', port=8080, debug=False)
-
-        threads = (threading.Thread(target=video_sender),)
-        for t in threads:
-            t.start()
+        app.run(host='0.0.0.0', port=8080, debug=False)
         
 except KeyboardInterrupt:
     GPIO.cleanup()
