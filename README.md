@@ -1,4 +1,4 @@
-# Home Warden [Raspberry Pi]
+# HOME WARDEN [Raspberry Pi]
 This repo contains all the hardware code for `Home Warden`
 
 <br>

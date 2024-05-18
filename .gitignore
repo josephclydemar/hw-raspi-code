@@ -1,1 +1,3 @@
-model_trained.yml
+__pycache__
+*.pkl
+faces_with_night_vision
